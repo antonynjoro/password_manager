@@ -3,7 +3,7 @@ from tkinter import *
 import tkinter.messagebox as msgbox
 import tkinter.simpledialog as sd
 import random
-import constants
+from constants import EMAIL_ADDRESS, SPACE_STRING
 # import the ability to copy to the clipboard
 import pyperclip
 
@@ -11,13 +11,13 @@ import pyperclip
 # ---------------------------- EMAIL PROMPT ------------------------------- #
 # if the user has not added an email address in the email_addresses.txt, prompt them for the email
 def request_email():
-    if len(constants.email_address) == 0:
+    if len(EMAIL_ADDRESS) == 0:
         email = sd.askstring("Email Address", "Please enter your email address")
         with open("email_address.txt", mode="w") as email_file:
             email_file.write(email)
         return email
     else:
-        return constants.email_address
+        return EMAIL_ADDRESS
 
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
@@ -62,7 +62,11 @@ def save_pw():
     # Open the file "passwords.txt" in append mode
     with open("passwords.txt", mode="a") as pw_file:
         # Write the website, username, and password to the file, separated by a new line
-        pw_file.write(website + username + password + "\n")
+        pw_file.write(website + SPACE_STRING + username + SPACE_STRING + password + "\n")
+        # Clear the fields
+        website_field.delete(first=0, last=END)
+        password_field.delete(first=0, last=END)
+        website_field.focus()
 
 
 # ---------------------------- UI SETUP ------------------------------- #
