@@ -83,7 +83,7 @@ window.resizable(width=False, height=False)
 # set the weight of the columns and rows
 for i in range(3):
     window.columnconfigure(i, weight=1)
-for i in range(5):
+for i in range(6):
     window.rowconfigure(i, weight=1)
 
 # Create a canvas to hold the logo
@@ -108,19 +108,27 @@ username_field = Entry(highlightthickness=0, )
 username_field.grid(row=2, column=1, columnspan=2, sticky=E + W + N + S, pady=10, )
 username_field.insert(0, request_email())
 
+# create label and entry for length of password
+length_label = Label(text="Length", highlightthickness=0, )
+length_label.grid(row=3, column=0, sticky=E + W + N + S, pady=10)
+
+
+length_slider = Scale(from_=8, to=32, orient=HORIZONTAL, highlightthickness=0, )
+length_slider.grid(row=3, column=1, sticky=E + W + N + S, pady=10, columnspan=2,)
+
 password_label = Label(text="Password", highlightthickness=0, )
-password_label.grid(row=3, column=0, sticky=E + W + N + S, pady=10)
+password_label.grid(row=4, column=0, sticky=E + W + N + S, pady=10)
 
 password_field = Entry(highlightthickness=0, )
-password_field.grid(row=3, column=1, sticky=E + W + N + S, pady=10, padx=10)
+password_field.grid(row=4, column=1, sticky=E + W + N + S, pady=10)
 
-# Create a button to generate a password
-generate_pw_btn = Button(text="Generate Password", highlightthickness=0, command=lambda length=10: generate_pw(length))
-generate_pw_btn.grid(row=3, column=2, sticky=E + W + N + S, pady=10)
+# Create a button to generate a password of a given length obtained from the slider
+generate_pw_btn = Button(text="Generate Password", highlightthickness=0, command=lambda: generate_pw(length_slider.get()))
+generate_pw_btn.grid(row=4, column=2, sticky=E + W + N + S, pady=10, padx=10)
 
 # Create a button to save the password
 add_btn = Button(text="Add", highlightthickness=0, fg="black", command=save_pw)
-add_btn.grid(row=4, column=1, columnspan=2, sticky=E + W + N + S, pady=10)
+add_btn.grid(row=5, column=1, columnspan=2, sticky=E + W + N + S, pady=10)
 
 # Start the main loop
 window.mainloop()
