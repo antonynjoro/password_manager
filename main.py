@@ -1,25 +1,60 @@
+import re
 import string
 from tkinter import *
 import tkinter.messagebox as msgbox
 import tkinter.simpledialog as sd
 import random
-from constants import EMAIL_ADDRESS, SPACE_STRING
 # import the ability to copy to the clipboard
 import pyperclip
+import json
+
+def is_valid_email(dict, key):
+    """This function checks if the email address is valid"""
+    try:
+        # regex for validating an Email including the dot and the @
+        email_regex = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+        return bool(email_regex.match(dict[key]))
+    except TypeError:
+        return False
+    except KeyError:
+        return False
 
 
 # ---------------------------- EMAIL PROMPT ------------------------------- #
 # if the user has not added an email address in the email_addresses.txt, prompt them for the email
-def request_email():
-    if len(EMAIL_ADDRESS) == 0:
+def request_email() -> dict:
+    """This function prompts the user for their email address and saves it to a file."""
+    try:
+        with open("email_address.json", mode="r") as email_file:
+            email_dict = json.load(email_file)
+
+
+        if email_dict['Email'] == None or email_dict['Email'] == "":
+            raise ValueError("No email address provided")
+        elif not is_valid_email(email_dict, "Email"):
+            raise ValueError(f"Invalid email address: {email_dict['Email']}")
+
+    except json.decoder.JSONDecodeError:
         email = sd.askstring("Email Address", "Please enter your email address")
-        with open("email_address.txt", mode="w") as email_file:
-            email_file.write(email)
-        return email
-    else:
-        return EMAIL_ADDRESS
+        email_dict = {"Email": email}
+        with open("email_address.json", mode="w") as email_file:
+            json.dump(email_dict, email_file)
 
 
+    except FileNotFoundError:
+        email = sd.askstring("Email Address", "Please enter your email address")
+        email_dict = {"Email": email}
+        with open("email_address.json", mode="w") as email_file:
+            json.dump(email_dict, email_file)
+    except ValueError as e:
+        email = sd.askstring("Email Address", f"{e}\nPlease enter your email address.")
+        email_dict = {"Email": email}
+        with open("email_address.json", mode="w") as email_file:
+            json.dump(email_dict, email_file)
+
+
+
+    return email_dict
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 # This function generates a random password of a given length
 def generate_pw(length):
@@ -59,17 +94,35 @@ def save_pw():
         # Show an error message to the user if any of the fields are empty
         msgbox.showerror("Error", str(e))
 
-    # Open the file "passwords.txt" in append mode
-    with open("passwords.txt", mode="a") as pw_file:
-        # Write the website, username, and password to the file, separated by a new line
-        pw_file.write(website + SPACE_STRING + username + SPACE_STRING + password + "\n")
-        # Clear the fields
-        website_field.delete(first=0, last=END)
-        password_field.delete(first=0, last=END)
-        website_field.focus()
+    # try to open the file to save the password
+    try:
+        # Open the file to save the password
+        with open("passwords.json", mode="r") as password_file:
+            # Read the file
+            data = json.load(password_file)
+            # Add the new password to the file
+            data[website] = {
+                "email": username,
+                "password": password
+            }
+        # Save the file
+        with open("passwords.json", mode="w") as password_file:
+            json.dump(data, password_file, indent=4)
+
+    # If the file does not exist, create it and save the password
+    except FileNotFoundError:
+        with open("passwords.json", mode="w") as password_file:
+            json.dump({website: {
+                "email": username,
+                "password": password
+            }}, password_file, indent=4)
 
 
 # ---------------------------- UI SETUP ------------------------------- #
+
+
+EMAIL_ADDRESS = request_email()["Email"]
+
 
 # Create a window
 window = Tk()
@@ -106,7 +159,7 @@ username_label.grid(row=2, column=0, sticky=E + W + N + S, pady=10)
 
 username_field = Entry(highlightthickness=0, )
 username_field.grid(row=2, column=1, columnspan=2, sticky=E + W + N + S, pady=10, )
-username_field.insert(0, request_email())
+username_field.insert(0, EMAIL_ADDRESS)
 
 # create label and entry for length of password
 length_label = Label(text="Length", highlightthickness=0, )
